@@ -191,3 +191,7 @@ The learnt policies follow the same behaviour as described in @sec-qval.
 - This makes IOQL more sample-efficient than SMDP, as shown by the regrets achieved by the respective algorithms in @sec-plot1 and @sec-plot2. 
 - Therefore IOQL is most suitable for the options framework, which is a composition of primitive actions. The options can be viewed as a user defined heuristic which pushes Q-Learning to traverse through important sections of the state space.
 - SMDP Q-Learning's apt use case would rather be in actions that actually have varying times while being atomic; that is, they are not compositions of other actions (options).
+
+# Github Link
+
+[https://github.com/iamviveksrk/RL-PA3](https://github.com/iamviveksrk/RL-PA3)
