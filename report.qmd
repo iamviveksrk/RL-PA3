@@ -136,6 +136,66 @@ EAST = Option(lambda state: 2, [(i, 4) for i in range(5)] + [(0, 1), (1, 1), (3,
 WEST = Option(lambda state: 3, [(i, 0) for i in range(5)] + [(0, 2), (1, 2), (3, 1), (4, 1), (3, 3), (4, 3)])
 ```
 
+# Implementation of Algorithms
+
+## Intra-option Q-Learning
+
+Truncated code highlighting the intra-option updates along with option executions and terminations is given below:
+
+```{{python}}
+def ioq_learning(options, episodes=10000, print_freq=2000, epsilon=0.01, alpha=0.1, gamma=0.9, ioql = True, seed=1, track=True):
+
+...
+
+while not done:
+  option_no = choose_action(Q[state], epsilon)
+  option = options[option_no]
+
+  option_done = False
+  option_reward = 0
+  option_init = int(state)
+  discount = 1
+
+  while not option_done:
+    action = option.policy(state)
+    state_next, reward, terminated, truncated, _ = env.step(action)
+
+    if ioql:
+      # Update all options (including one-step) with consistent policy action at state
+      for c_option_no in range(len(options)):
+        c_option = options[c_option_no]
+        # Check if consistent
+        if c_option.policy(state) == action:
+          # Update state, action pairs' value
+          if decode(state_next) in c_option.terminate:
+            Q[state, c_option_no] = (1 - alpha) * Q[state, c_option_no] + alpha * (reward + gamma * np.max(Q[state_next]))
+          else:
+            Q[state, c_option_no] = (1 - alpha) * Q[state, c_option_no] + alpha * (reward + gamma * Q[state_next, c_option_no])
+
+    done = terminated or truncated
+    option_done = decode(state_next) in option.terminate
+
+    option_reward += discount * reward
+    discount *= gamma
+    tot_reward += reward
+    state = state_next
+
+  Q[option_init, option_no] = (1 - alpha) * Q[option_init, option_no] + alpha * (option_reward + discount * np.max(Q[state_next]))
+
+...
+
+return Q, episode_rewards, avg_rewards
+```
+
+## SMDP Q-Learning
+
+SMDP Q-Learning is simply intra-option q-learning, but without the intra-option updates. Exploiting this subsumption, SMDP is defined as the following:
+
+```{{python}}
+def smdp_learning(options, episodes=10000, print_freq=2000, epsilon=0.01, alpha=0.1, gamma=0.9, seed=1):
+  return ioq_learning(options, episodes, print_freq, epsilon, alpha, gamma, ioql = False, seed=seed)
+```
+
 # Tasks
 
 ## Hyperparameter tuning
