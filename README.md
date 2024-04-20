@@ -1,9 +1,7 @@
 # CS6700: Reinforcement Learning (Jan-May 2024) Programming Assignment 3
-Vivek Sivaramakrishnan NS24Z170Pooja Pandey NS24Z172
 
-\usepackage{float}
-
-\floatplacement{table}{H}
+Vivek Sivaramakrishnan NS24Z170
+Pooja Pandey NS24Z172
 
 
 
@@ -22,11 +20,9 @@ options: the option *policy* and *termination* set. We use a
 `collections.namedtuple` structure to store the policy (a callable
 function) and termination set of states for our option:
 
-```` markdown
-```{python}
+``` maarkdown
 Option = namedtuple('Option', ['policy', 'terminate'])
 ```
-````
 
 ## Primitive Actions
 
@@ -39,8 +35,7 @@ we define primitive actions to be *one-step* options; that is:
 
 Following the above, we define our *one-step* options as follows:
 
-```` markdown
-```{python}
+``` maarkdown
 grid = [(i, j) for i in range(5) for j in range(5)]
 
 S = Option(lambda state: 0, grid)
@@ -50,7 +45,6 @@ W = Option(lambda state: 3, grid)
 P = Option(lambda state: 4, grid)
 D = Option(lambda state: 5, grid)
 ```
-````
 
 ## Option `Goto X`
 
@@ -60,27 +54,21 @@ Defining the termination set for the option is straightforward; we store
 only the first 2 values of the 4-tuple state. This can be obtained from
 an encoded state using the following `decode` function:
 
-```` markdown
-```{python}
+``` maarkdown
 decode = lambda state: tuple(env.unwrapped.decode(state))[:2]
 ```
-````
 
 One can set
 
-```` markdown
-```{python}
+``` maarkdown
 Option_Goto_R.terminate = {(0, 0)}
 ```
-````
 
 and then run
 
-```` markdown
-```{python}
+``` maarkdown
 decode(state) in Option_Goto_R.terminate
 ```
-````
 
 to check if option has terminated.
 
@@ -101,15 +89,13 @@ extract policies for `Goto X` from the learnt Q-Function as follows:
     reshaping result to 5 × 5 × 6, and arg max  (or *ϵ*-greedy) along
     the 3rd axis gives the policy for this option.
 
-```` markdown
-```{python}
+``` maarkdown
 policy_grids = []
 for k in range(4):
     policy_grid = Q[[env.unwrapped.encode(i, j, k, (k+1)%4) for i in range(5) for j in range(5)]].reshape(5, 5, 6).argmax(axis=2)
     
     policy_grids.append(policy_grid)
 ```
-````
 
 Performing the above gives the following (deterministic) option
 policies:
@@ -120,8 +106,7 @@ We pass obtained policy grids through a function decorator to generate
 the policy function. We further define our `Goto X` options using the
 generated policy functions and termination states as follows:
 
-```` markdown
-```{python}
+``` maarkdown
 macro_options = []
 option_policy_generator = lambda grid: (lambda state: (grid[decode(state)]))
 option_terminations = [(0, 0), (0, 4), (4, 0), (4, 3)]
@@ -133,7 +118,6 @@ for policy_grid, term_state in zip(policy_grids, option_terminations):
 
 R, G, Y, B = macro_options
 ```
-````
 
 ## Mutually Exclusive Options
 
@@ -145,15 +129,13 @@ policies are pairwise non-consistent on all states *s*.
 In our design of the options, we set the termination states to be the
 states adjacent to these obstructions:
 
-```` markdown
-```{python}
+``` maarkdown
 SOUTH = Option(lambda state: 0, [(4, i) for i in range(5)])
 NORTH = Option(lambda state: 1, [(0, i) for i in range(5)])
 
 EAST = Option(lambda state: 2, [(i, 4) for i in range(5)] + [(0, 1), (1, 1), (3, 0), (4, 0), (3, 2), (4, 2)])
 WEST = Option(lambda state: 3, [(i, 0) for i in range(5)] + [(0, 2), (1, 2), (3, 1), (4, 1), (3, 3), (4, 3)])
 ```
-````
 
 # Tasks
 
